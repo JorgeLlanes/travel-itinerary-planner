@@ -20,13 +20,13 @@ Why did you choose this domain?
 
 **Backend**
 
-- Technology
+- TypeScript
 - Technology
 
 **Database & ORM**
 
-- Technology
-- Technology
+- PostgreSQL
+- Prisma ORM
 
 **Infrastructure**
 
@@ -78,12 +78,12 @@ npm run dev
 
 ### Completed
 
-- [x] Feature one
+- [x] Installed prisma orm and created data scheme
 - [x] Feature two
 
 ### In Progress
 
-- [ ] Feature three
+- [ ] Scheme structure
 - [ ] Feature four
 
 ### Planned

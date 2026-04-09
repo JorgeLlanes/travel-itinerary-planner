@@ -11,3 +11,23 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum TwoFactorMethod {
+  AUTHENTICATOR
+  SMS
+  EMAIL
+}
+
+model User {
+  id        Int   @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String  @unique
+  phoneNum  String?
+  username  String?  
+  password  String
+  twoFactorEnabled Boolean  @default(false)
+  twoFactorMethod  TwoFactorMethod? 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
