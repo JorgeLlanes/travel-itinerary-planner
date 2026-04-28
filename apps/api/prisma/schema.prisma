@@ -18,16 +18,35 @@ enum TwoFactorMethod {
   EMAIL
 }
 
+enum TripStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
 model User {
-  id        Int   @id @default(autoincrement())
+  id        String   @id @default(cuid())
   firstName String
   lastName  String
   email     String  @unique
   phoneNum  String?
   username  String?  
   password  String
-  twoFactorEnabled Boolean  @default(false)
+  twoFactorEnabled Boolean  @default(false) 
   twoFactorMethod  TwoFactorMethod? 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  trips     Trip[]
+}
+
+model Trip {
+  id        String   @id @default(cuid())
+  title     String
+  status    TripStatus @default(UPCOMING)
+  destination String
+  userId    String 
+  user      User @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
