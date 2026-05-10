@@ -1,4 +1,5 @@
 import Fastify from "fastify"; // Imported Fastify
+import usersRoutes from "./routes/users.js";
 
 // Created server instance
 const fastify = Fastify({
@@ -13,6 +14,8 @@ fastify.get("/", async (request, reply) => {
 fastify.get("/health", async (request, reply) => {
   return { status: "ok" };
 });
+
+fastify.register(usersRoutes);
 
 // Starting the server
 const start = async () => {
