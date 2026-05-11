@@ -18,47 +18,65 @@ const UserSchema = z.object({
   twoFactorEnabled: z.boolean().default(false),
 });
 
+interface ParamsType {
+  id: string;
+}
+
 async function usersRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ) {
   fastify.post("/users", async (request, reply) => {
     const result = UserSchema.safeParse(request.body);
-    if (result.success) {
-      const user = await prisma.user.findUnique({
-        where: { email: result.data.email },
-      });
-      if (!user) {
-        const password = result.data.password;
-        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const { firstName, lastName, email, twoFactorEnabled } =
-          await prisma.user.create({
-            data: {
-              firstName: result.data.firstName,
-              lastName: result.data.lastName,
-              email: result.data.email,
-              password: hashedPassword,
-              twoFactorEnabled: result.data.twoFactorEnabled,
-            },
-          });
-
-        return reply
-          .status(201)
-          .send({ firstName, lastName, email, twoFactorEnabled });
-      } else {
-        return reply
-          .status(409)
-          .send("An account with this email already exists");
-      }
-    } else {
+    if (!result.success) {
       const flattened = z.flattenError(result.error);
       return reply.status(400).send(flattened);
     }
+
+    const user = await prisma.user.findUnique({
+      where: { email: result.data.email },
+    });
+    if (user) {
+      return reply
+        .status(409)
+        .send("An account with this email already exists");
+    }
+
+    const hashedPassword = await bcrypt.hash(result.data.password, 10);
+
+    const { firstName, lastName, email, twoFactorEnabled } =
+      await prisma.user.create({
+        data: {
+          firstName: result.data.firstName,
+          lastName: result.data.lastName,
+          email: result.data.email,
+          password: hashedPassword,
+          twoFactorEnabled: result.data.twoFactorEnabled,
+        },
+      });
+
+    return reply
+      .status(201)
+      .send({ firstName, lastName, email, twoFactorEnabled });
   });
 
-  fastify.get("/users/:id", async (request, reply) => {
-    return { hello: "world" };
+  fastify.get<{ Params: ParamsType }>("/users/:id", async (request, reply) => {
+    const id = request.params.id;
+    const userId = await prisma.user.findUnique({
+      where: { id: id },
+      select: {
+        firstName: true,
+        lastName: true,
+        email: true,
+        twoFactorEnabled: true,
+      },
+    });
+
+    if (!userId) {
+      return reply.status(404).send("No user found with that ID");
+    }
+    return reply.status(200).send(userId);
   });
 }
 
