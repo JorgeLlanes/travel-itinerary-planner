@@ -62,9 +62,8 @@ async function usersRoutes(
   });
 
   fastify.get<{ Params: ParamsType }>("/users/:id", async (request, reply) => {
-    const id = request.params.id;
     const userId = await prisma.user.findUnique({
-      where: { id: id },
+      where: { id: request.params.id },
       select: {
         firstName: true,
         lastName: true,
