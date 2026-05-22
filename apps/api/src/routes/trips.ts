@@ -15,6 +15,10 @@ const TripScheme = z.object({
   userId: z.string(),
 });
 
+interface ParamsType {
+  id: string;
+}
+
 async function tripRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
@@ -44,6 +48,23 @@ async function tripRoutes(
     });
 
     return reply.status(201).send({ id, title, destination, status });
+  });
+
+  fastify.get<{ Params: ParamsType }>("/trips/:id", async (request, reply) => {
+    const trip = await prisma.trip.findUnique({
+      where: { id: request.params.id },
+      select: {
+        title: true,
+        status: true,
+        destination: true,
+        id: true,
+      },
+    });
+
+    if (!trip) {
+      return reply.status(404).send("No trip found with that ID");
+    }
+    return reply.status(200).send(trip);
   });
 }
 
