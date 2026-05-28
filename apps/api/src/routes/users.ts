@@ -77,6 +77,24 @@ async function usersRoutes(
     }
     return reply.status(200).send(userId);
   });
+
+  fastify.get<{ Params: ParamsType }>(
+    "/users/:id/trips",
+    async (request, reply) => {
+      const user = await prisma.user.findUnique({
+        where: { id: request.params.id },
+      });
+
+      if (!user) {
+        return reply.status(404).send("No user found with that ID");
+      }
+
+      const trips = await prisma.trip.findMany({
+        where: { userId: user.id },
+      });
+      reply.status(200).send(trips);
+    },
+  );
 }
 
 //ESM
