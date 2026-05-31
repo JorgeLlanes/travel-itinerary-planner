@@ -104,6 +104,26 @@ async function tripRoutes(
       return reply.status(200).send({ id, title, destination, status });
     },
   );
+
+  fastify.delete<{ Params: ParamsType }>(
+    "/trips/:id",
+    async (request, reply) => {
+      const trip = await prisma.trip.findUnique({
+        where: { id: request.params.id },
+      });
+
+      if (!trip) {
+        return reply.status(404).send("No trip found with that ID");
+      }
+
+      const { id, title } = await prisma.trip.delete({
+        where: { id: request.params.id },
+      });
+      return reply
+        .status(200)
+        .send({ message: `Trip ${title} was successfully deleted`, id });
+    },
+  );
 }
 
 //ESM
