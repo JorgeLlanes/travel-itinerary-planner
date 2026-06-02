@@ -18,6 +18,10 @@ const BookingScheme = z.object({
   totalPrice: moneyAmountString(),
 });
 
+interface ParamsType {
+  id: string;
+}
+
 async function bookingsRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
@@ -72,6 +76,27 @@ async function bookingsRoutes(
       dateOfBooking,
     });
   });
+
+  fastify.get<{ Params: ParamsType }>(
+    "/bookings/:id",
+    async (request, reply) => {
+      const booking = await prisma.booking.findUnique({
+        where: { id: request.params.id },
+        select: {
+          id: true,
+          type: true,
+          status: true,
+          confirmationNumber: true,
+          dateOfBooking: true,
+          totalPrice: true,
+        },
+      });
+      if (!booking) {
+        return reply.status(404).send("No booking found with that ID");
+      }
+      return reply.status(200).send(booking);
+    },
+  );
 }
 
 export default bookingsRoutes;
