@@ -31,7 +31,7 @@ interface ParamsType {
   id: string;
 }
 
-async function tripRoutes(
+async function tripsRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ) {
@@ -126,5 +126,4 @@ async function tripRoutes(
   );
 }
 
-//ESM
-export default tripRoutes;
+export default tripsRoutes;

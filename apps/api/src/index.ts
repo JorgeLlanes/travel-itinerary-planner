@@ -1,6 +1,7 @@
 import Fastify from "fastify"; // Imported Fastify
 import usersRoutes from "./routes/users.js";
 import tripsRoutes from "./routes/trips.js";
+import bookingsRoutes from "./routes/bookings.js";
 
 // Created server instance
 const fastify = Fastify({
@@ -18,6 +19,7 @@ fastify.get("/health", async (request, reply) => {
 
 fastify.register(usersRoutes);
 fastify.register(tripsRoutes);
+fastify.register(bookingsRoutes);
 
 // Starting the server
 const start = async () => {

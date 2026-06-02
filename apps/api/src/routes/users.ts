@@ -97,5 +97,4 @@ async function usersRoutes(
   );
 }
 
-//ESM
 export default usersRoutes;
