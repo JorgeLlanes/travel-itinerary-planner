@@ -124,6 +124,32 @@ async function tripsRoutes(
         .send({ message: `Trip ${title} was successfully deleted`, id });
     },
   );
+
+  fastify.get<{ Params: ParamsType }>(
+    "/trips/:id/bookings",
+    async (request, reply) => {
+      const trip = await prisma.trip.findUnique({
+        where: { id: request.params.id },
+      });
+
+      if (!trip) {
+        return reply.status(404).send("No trip found with that ID");
+      }
+
+      const bookings = await prisma.booking.findMany({
+        where: { tripId: trip.id },
+        select: {
+          id: true,
+          type: true,
+          status: true,
+          confirmationNumber: true,
+          totalPrice: true,
+          dateOfBooking: true,
+        },
+      });
+      reply.status(200).send(bookings);
+    },
+  );
 }
 
 export default tripsRoutes;
