@@ -110,7 +110,7 @@ model HotelBooking {
   hotel         String
   address       String
   starRating    Decimal
-  amenities     String[]
+  amenities     String[] @default([])
   checkInDate   DateTime
   checkOutDate  DateTime
   numOfRooms    Int

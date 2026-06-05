@@ -1,11 +1,12 @@
-import Fastify from "fastify"; 
+import Fastify from "fastify";
 import usersRoutes from "./routes/users.js";
 import tripsRoutes from "./routes/trips.js";
 import bookingsRoutes from "./routes/bookings.js";
 import flightsRoutes from "./routes/flights.js";
+import hotelsRoutes from "./routes/hotels.js";
 
 const fastify = Fastify({
-  logger: true, 
+  logger: true,
 });
 
 fastify.get("/", async (request, reply) => {
@@ -20,6 +21,7 @@ fastify.register(usersRoutes);
 fastify.register(tripsRoutes);
 fastify.register(bookingsRoutes);
 fastify.register(flightsRoutes);
+fastify.register(hotelsRoutes);
 
 const start = async () => {
   try {
