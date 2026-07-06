@@ -1,11 +1,14 @@
-import Fastify from "fastify"; // Imported Fastify
+import Fastify from "fastify";
+import usersRoutes from "./routes/users.js";
+import tripsRoutes from "./routes/trips.js";
+import bookingsRoutes from "./routes/bookings.js";
+import flightsRoutes from "./routes/flights.js";
+import hotelsRoutes from "./routes/hotels.js";
 
-// Created server instance
 const fastify = Fastify({
-  logger: true, // Enable logging
+  logger: true,
 });
 
-// Register a GET route for the root path
 fastify.get("/", async (request, reply) => {
   return { hello: "world" };
 });
@@ -14,7 +17,12 @@ fastify.get("/health", async (request, reply) => {
   return { status: "ok" };
 });
 
-// Starting the server
+fastify.register(usersRoutes);
+fastify.register(tripsRoutes);
+fastify.register(bookingsRoutes);
+fastify.register(flightsRoutes);
+fastify.register(hotelsRoutes);
+
 const start = async () => {
   try {
     await fastify.listen({ port: 3000 });

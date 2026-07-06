@@ -83,14 +83,15 @@ model Booking {
   dateOfBooking      DateTime        @default(now())
   user               User            @relation(fields: [userId], references: [id])
   trip               Trip            @relation(fields: [tripId], references: [id])
-  FlightBookings     FlightBooking[]
-  HotelBookings      HotelBooking[]
+  flightBookings     FlightBooking[]
+  hotelBookings      HotelBooking[]
 }
 
 model FlightBooking {
-  id                   String     @id @default(cuid())
+  id                   String        @id @default(cuid())
   bookingId            String
-  booking              Booking    @relation(fields: [bookingId], references: [id])
+  booking              Booking       @relation(fields: [bookingId], references: [id])
+  status               BookingStatus @default(CONFIRMED)
   airline              String
   flightNumber         String
   departureAirportCode String
@@ -98,19 +99,20 @@ model FlightBooking {
   departureDateTime    DateTime
   arrivalDateTime      DateTime
   cabinClass           CabinClass
-  baggageSelection     String[]   @default([])
+  baggageSelection     String[]      @default([])
   numOfPassengers      Int
   pricePaid            Decimal
 }
 
 model HotelBooking {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   bookingId     String
-  booking       Booking  @relation(fields: [bookingId], references: [id])
+  booking       Booking       @relation(fields: [bookingId], references: [id])
+  status        BookingStatus @default(CONFIRMED)
   hotel         String
   address       String
   starRating    Decimal
-  amenities     String[]
+  amenities     String[]      @default([])
   checkInDate   DateTime
   checkOutDate  DateTime
   numOfRooms    Int
