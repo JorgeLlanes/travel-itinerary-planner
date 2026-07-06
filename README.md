@@ -6,7 +6,7 @@ A full-stack travel itinerary planner that lets users create trips, manage booki
 
 ## Why I Built This
 
-I spent three years building consumer-facing products at The Points Guy, one of the most recognized names in travel media. That experience gave me a deep understanding of the traveler's perspective — and a clear gap in my backend skills. I built Travoya to close that gap deliberately: designing a real database schema, building a typed REST API from scratch, and working toward an AI-powered travel assistant that helps users plan and discover trips through natural language.
+I spent three years building consumer-facing products at The Points Guy, one of the most recognized names in travel media. That experience gave me a deep understanding of what it means to build for real users at scale — and a drive to keep expanding what I can contribute as an engineer. I built Travoya to grow deliberately: designing a real database schema, building a typed REST API from scratch, and working toward an AI-powered travel assistant that helps users plan and discover trips through natural language.
 
 ---
 
@@ -80,20 +80,42 @@ User
 
 ### Users
 
-| Method | Endpoint         | Description              |
-| ------ | ---------------- | ------------------------ |
-| POST   | /users           | Create a new user        |
-| GET    | /users/:id       | Get a user by ID         |
-| GET    | /users/:id/trips | Get all trips for a user |
+| Method | Endpoint         | Description                                    |
+| ------ | ---------------- | ---------------------------------------------- |
+| POST   | /users           | Create a new user with bcrypt password hashing |
+| GET    | /users/:id       | Get a user by ID                               |
+| GET    | /users/:id/trips | Get all trips for a user                       |
 
 ### Trips
 
-| Method | Endpoint   | Description       |
-| ------ | ---------- | ----------------- |
-| POST   | /trips     | Create a new trip |
-| GET    | /trips/:id | Get a trip by ID  |
-| PATCH  | /trips/:id | Update a trip     |
-| DELETE | /trips/:id | Delete a trip     |
+| Method | Endpoint            | Description                               |
+| ------ | ------------------- | ----------------------------------------- |
+| POST   | /trips              | Create a new trip                         |
+| GET    | /trips/:id          | Get a trip by ID                          |
+| GET    | /trips/:id/bookings | Get all bookings for a trip               |
+| PATCH  | /trips/:id          | Update trip title, destination, or status |
+| DELETE | /trips/:id          | Delete a trip                             |
+
+### Bookings
+
+| Method | Endpoint      | Description                                          |
+| ------ | ------------- | ---------------------------------------------------- |
+| POST   | /bookings     | Create a new booking                                 |
+| GET    | /bookings/:id | Get a booking by ID with nested flight or hotel data |
+
+### Flight Bookings
+
+| Method | Endpoint                    | Description                           |
+| ------ | --------------------------- | ------------------------------------- |
+| POST   | /bookings/:id/flight        | Create a flight booking for a booking |
+| PATCH  | /bookings/:id/flight/cancel | Cancel a flight booking               |
+
+### Hotel Bookings
+
+| Method | Endpoint                   | Description                          |
+| ------ | -------------------------- | ------------------------------------ |
+| POST   | /bookings/:id/hotel        | Create a hotel booking for a booking |
+| PATCH  | /bookings/:id/hotel/cancel | Cancel a hotel booking               |
 
 ---
 
@@ -190,15 +212,24 @@ DATABASE_URL="postgresql://your_username@localhost:5432/travoya"
 - [x] POST /trips — user existence check, auto-defaulted UPCOMING status
 - [x] GET /trips/:id — safe field selection, 404 handling
 - [x] GET /users/:id/trips — findMany with empty array support
+- [x] GET /trips/:id/bookings — returns all bookings for a trip with empty array support
 - [x] PATCH /trips/:id — partial Zod schema, cleanUndefined utility, strict TypeScript
 - [x] DELETE /trips/:id — confirmation response with title and ID
 - [x] cleanUndefined utility in lib/utils.ts for safe partial updates
+- [x] moneyAmountString utility in lib/utils.ts for financial field validation
+- [x] generateConfirmationNumber utility in lib/utils.ts for booking confirmation codes
+- [x] POST /bookings — type validation, user and trip existence checks, 403 trip ownership check
+- [x] GET /bookings/:id — safe field selection, 404 handling
+- [x] POST /bookings/:id/flight — booking type check, ISO 8601 datetime validation, CabinClass enum, baggage selection with default
+- [x] POST /bookings/:id/hotel — booking type check, star rating validation, amenities with default, money validation
+- [x] Added status field to FlightBooking and HotelBooking models for independent cancellation
+- [x] Schema migrations — renamed relation fields to camelCase, added status defaults
 
 ### In Progress
 
-- [ ] Booking routes — POST, GET
-- [ ] FlightBooking routes
-- [ ] HotelBooking routes
+- [ ] Enhance GET /bookings/:id — include nested flightBookings and hotelBookings
+- [ ] PATCH /bookings/:id/flight/cancel — set flight booking status to CANCELLED
+- [ ] PATCH /bookings/:id/hotel/cancel — set hotel booking status to CANCELLED
 
 ### Planned
 
@@ -226,6 +257,14 @@ DATABASE_URL="postgresql://your_username@localhost:5432/travoya"
 **Python microservice for AI** — the planned AI layer will be built as a separate Python service inside the Turborepo rather than adding Python to the existing TypeScript API. This provides a clean separation of concerns, mirrors how production AI systems are typically structured, and enables learning Python and AI integration simultaneously in a real production context.
 
 **Zod for validation** — all incoming request data is validated through Zod schemas before touching the database. This catches type mismatches, missing fields, and invalid enum values at the API boundary — the same approach used in production at The Points Guy to eliminate runtime crashes from malformed configurations.
+
+**PATCH over PUT for partial updates** — PATCH allows clients to send only the fields they want to change rather than the full resource object. Combined with Zod's `.omit().partial()` pattern and a custom `cleanUndefined` utility, this provides safe and flexible partial updates while satisfying strict TypeScript compiler settings.
+
+**Decimal over Float for financial data** — all price and financial fields use Prisma's Decimal type to avoid binary floating point rounding errors. A custom `moneyAmountString` Zod validator enforces exactly two decimal places and positive values at the API boundary before any data reaches the database.
+
+**Independent cancellation for FlightBooking and HotelBooking** — each sub-booking has its own status field rather than relying solely on the parent Booking status. This allows users to cancel a flight without cancelling the hotel on the same booking, preserving booking history and reflecting how real travel systems handle partial cancellations.
+
+**exactOptionalPropertyTypes enabled** — the TypeScript compiler is configured with strict optional property types to prevent undefined values from reaching the database silently. The `cleanUndefined` utility handles the ergonomic cost of this setting for partial update routes.
 
 ---
 
