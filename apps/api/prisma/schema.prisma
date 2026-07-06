@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TwoFactorMethod {
+  AUTHENTICATOR
+  SMS
+  EMAIL
+}
+
+enum TripStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  PENDING
+  COMPLETED
+}
+
+enum BookingType {
+  HOTEL
+  FLIGHT
+}
+
+enum CabinClass {
+  ECONOMY
+  PREMIUM_ECONOMY
+  BUSINESS
+  FIRST
+}
+
+model User {
+  id               String           @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String           @unique
+  phoneNum         String?
+  username         String?
+  password         String
+  twoFactorEnabled Boolean          @default(false)
+  twoFactorMethod  TwoFactorMethod?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  trips            Trip[]
+  bookings         Booking[]
+}
+
+model Trip {
+  id          String     @id @default(cuid())
+  title       String
+  status      TripStatus @default(UPCOMING)
+  destination String
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  bookings    Booking[]
+}
+
+model Booking {
+  id                 String          @id @default(cuid())
+  tripId             String
+  userId             String
+  type               BookingType
+  status             BookingStatus   @default(PENDING)
+  confirmationNumber String
+  totalPrice         Decimal
+  dateOfBooking      DateTime        @default(now())
+  user               User            @relation(fields: [userId], references: [id])
+  trip               Trip            @relation(fields: [tripId], references: [id])
+  flightBookings     FlightBooking[]
+  hotelBookings      HotelBooking[]
+}
+
+model FlightBooking {
+  id                   String        @id @default(cuid())
+  bookingId            String
+  booking              Booking       @relation(fields: [bookingId], references: [id])
+  status               BookingStatus @default(CONFIRMED)
+  airline              String
+  flightNumber         String
+  departureAirportCode String
+  arrivalAirportCode   String
+  departureDateTime    DateTime
+  arrivalDateTime      DateTime
+  cabinClass           CabinClass
+  baggageSelection     String[]      @default([])
+  numOfPassengers      Int
+  pricePaid            Decimal
+}
+
+model HotelBooking {
+  id            String        @id @default(cuid())
+  bookingId     String
+  booking       Booking       @relation(fields: [bookingId], references: [id])
+  status        BookingStatus @default(CONFIRMED)
+  hotel         String
+  address       String
+  starRating    Decimal
+  amenities     String[]      @default([])
+  checkInDate   DateTime
+  checkOutDate  DateTime
+  numOfRooms    Int
+  numOfGuests   Int
+  pricePerNight Decimal
+  totalPrice    Decimal
+}
